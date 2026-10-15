@@ -6,41 +6,59 @@ import "@xyflow/react/dist/style.css";
 import type { GraphOut, GraphNode, GraphEdge } from "@/lib/types";
 import StatusBadge from "@/components/StatusBadge";
 
+function safeGet<T>(obj: Record<string, unknown> | undefined, key: string, fallback: T): T {
+  if (!obj || typeof obj !== "object") return fallback;
+  const val = obj[key];
+  return (val as T) ?? fallback;
+}
+
 const nodeTypes: NodeTypes = {
   repository: ({ data }) => (
     <div className="px-3 py-2 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-mono whitespace-nowrap">
       Repo: {data.label}
     </div>
   ),
-  file: ({ data }) => (
-    <div className="px-3 py-2 rounded-md bg-sky-500/20 border border-sky-500/40 text-sky-400 text-xs font-mono whitespace-nowrap max-w-[200px] truncate">
-      {data.label}
-      <StatusBadge value={data.data.change_type} className="ml-2" />
-    </div>
-  ),
-  scope: ({ data }) => (
-    <div className="px-3 py-2 rounded-md bg-violet-500/20 border border-violet-500/40 text-violet-400 text-xs font-mono whitespace-nowrap max-w-[250px] truncate">
-      {data.label}
-      <StatusBadge value={data.data.coverage_status} className="ml-2" />
-    </div>
-  ),
+  file: ({ data }) => {
+    const changeType = safeGet(data, "change_type", "unknown");
+    return (
+      <div className="px-3 py-2 rounded-md bg-sky-500/20 border border-sky-500/40 text-sky-400 text-xs font-mono whitespace-nowrap max-w-[200px] truncate">
+        {data.label}
+        <StatusBadge value={changeType} className="ml-2" />
+      </div>
+    );
+  },
+  scope: ({ data }) => {
+    const coverageStatus = safeGet(data, "coverage_status", "COVERAGE_UNAVAILABLE");
+    return (
+      <div className="px-3 py-2 rounded-md bg-violet-500/20 border border-violet-500/40 text-violet-400 text-xs font-mono whitespace-nowrap max-w-[250px] truncate">
+        {data.label}
+        <StatusBadge value={coverageStatus} className="ml-2" />
+      </div>
+    );
+  },
   line: ({ data }) => (
     <div className="px-2 py-1 rounded bg-rose-500/20 border border-rose-500/40 text-rose-400 text-[10px] font-mono whitespace-nowrap">
       {data.label}
     </div>
   ),
-  test: ({ data }) => (
-    <div className="px-3 py-2 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono whitespace-nowrap max-w-[200px] truncate">
-      {data.label}
-      <StatusBadge value={data.data.category} className="ml-2" />
-    </div>
-  ),
-  verification: ({ data }) => (
-    <div className="px-3 py-2 rounded-md bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-400 text-xs font-mono whitespace-nowrap max-w-[200px] truncate">
-      {data.label}
-      <StatusBadge value={data.data.classification} className="ml-2" />
-    </div>
-  ),
+  test: ({ data }) => {
+    const category = safeGet(data, "category", "UNKNOWN");
+    return (
+      <div className="px-3 py-2 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-mono whitespace-nowrap max-w-[200px] truncate">
+        {data.label}
+        <StatusBadge value={category} className="ml-2" />
+      </div>
+    );
+  },
+  verification: ({ data }) => {
+    const classification = safeGet(data, "classification", "UNKNOWN");
+    return (
+      <div className="px-3 py-2 rounded-md bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-400 text-xs font-mono whitespace-nowrap max-w-[200px] truncate">
+        {data.label}
+        <StatusBadge value={classification} className="ml-2" />
+      </div>
+    );
+  },
   failure: ({ data }) => (
     <div className="px-3 py-2 rounded-md bg-rose-500/20 border-2 border-rose-500 text-rose-300 text-xs font-mono whitespace-nowrap max-w-[200px] truncate">
       🔴 {data.label}
@@ -125,6 +143,12 @@ export default function EvidenceGraph({ graph, onNodeClick }: EvidenceGraphProps
     setEdges(eds => addEdge({ ...connection, type: "default" }, eds));
   };
 
+  const handleNodeClick = (_event: React.MouseEvent, node: { id: string }) => {
+    if (onNodeClick) {
+      onNodeClick(node.id);
+    }
+  };
+
   return (
     <div className="w-full h-full rounded-md border border-[#1e2633] bg-[#0b0e14]">
       <ReactFlow
@@ -138,7 +162,7 @@ export default function EvidenceGraph({ graph, onNodeClick }: EvidenceGraphProps
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView={true}
-        onClick={onNodeClick ? () => {} : undefined}
+        onNodeClick={handleNodeClick}
       >
         <Background color="#1e2633" gap={16} />
         <Controls />

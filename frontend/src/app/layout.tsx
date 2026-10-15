@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BranchSleuth — Find the bugs your tests miss",
+  title: "BranchSleuth - Find the bugs your tests miss",
   description: "Change-aware software verification and regression analysis for Python repositories.",
 };
 
@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="mx-auto max-w-7xl px-6 py-8">{children}</main>
         <footer className="border-t border-[#1e2633] mt-16">
           <div className="mx-auto max-w-7xl px-6 py-6 text-xs text-slate-500 flex justify-between">
-            <span>BranchSleuth — change-aware verification for Python</span>
+            <span>BranchSleuth - change-aware verification for Python</span>
             <span className="mono">every finding comes from a real analysis run</span>
           </div>
         </footer>

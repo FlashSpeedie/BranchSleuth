@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -55,7 +57,7 @@ export default function AnalysisDetailPage() {
 
   useEffect(() => { load(); }, [runId]);
 
-  const runtimeStatus = run?.runtime_info?.docker ? "executed" : run?.runtime_info?.docker === false ? "unavailable" : "skipped";
+  const runtimeStatus = run?.summary?.runtime_status ?? "unknown";
 
   if (loading) {
     return (
