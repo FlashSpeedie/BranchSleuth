@@ -38,7 +38,10 @@ def claim_next_job(db: Session, worker_id: str) -> uuid.UUID | None:
         )
         row = db.execute(sql, {"worker": worker_id}).fetchone()
         db.commit()
-        return uuid.UUID(row[0]) if row else None
+        if row is None:
+            return None
+        val = row[0]
+        return val if isinstance(val, uuid.UUID) else uuid.UUID(val)
     rows = db.scalars(select(AnalysisRun).where(AnalysisRun.status == RunStatus.QUEUED.value).order_by(AnalysisRun.created_at).limit(1)).all()
     if not rows:
         db.commit()

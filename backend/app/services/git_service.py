@@ -45,14 +45,16 @@ def clone(url: str, dest: Path, timeout: int = 600) -> None:
 
 
 def ls_remote(repo: str, is_local: bool, timeout: int = 60) -> list[tuple[str, str]]:
-    args = ["ls-remote", "--heads", "--tags"] + (["--symref", "HEAD", repo] if not is_local else [])
-    out = run_git(args if is_local else ["ls-remote", repo], cwd=repo if is_local else None, timeout=timeout)
+    if is_local:
+        out = run_git(["for-each-ref", "--format=%(objectname) %(refname)", "refs/heads/", "refs/tags/"], cwd=repo, timeout=timeout)
+    else:
+        out = run_git(["ls-remote", "--heads", "--tags", repo], timeout=timeout)
     refs: list[tuple[str, str]] = []
     for line in out.splitlines():
         line = line.strip()
-        if not line or "symref" in line:
+        if not line:
             continue
-        parts = line.split("\t", 1)
+        parts = line.split(" ", 1)
         if len(parts) != 2:
             continue
         sha, ref = parts
